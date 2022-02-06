@@ -6,39 +6,58 @@
 */
 
 // Imports
-const {
-    randomBytes,
-    pbkdf2Sync
-} = require('crypto');
+const crypto = require('crypto');
 const util = require('util');
 
-// Crypto params
+// KDF params
 const PBKDF2_ITERATIONS = 310000;
 const PBKDF2_SALT_LEN = 32; // bytes
 const PBKDF2_KEY_LEN = 64; // bytes
 const PBKDF2_DIGEST = 'sha256';
 
+// Symmetric enc params
+const AES_256_GCM = 'aes-256-gcm';
+const AES_IV_LEN = 16; // bytes
+const AES_KEY_LEN = 32; // bytes
+const AES_IN_ENCODING = 'utf8';
+const AES_OUT_ENCODING = 'base64';
+
+
 // Module exports
 module.exports = {
-    PBKDF2_ITERATIONS: PBKDF2_ITERATIONS,
-    PBKDF2_SALT_LEN : PBKDF2_SALT_LEN,
-    PBKDF2_KEY_LEN: PBKDF2_KEY_LEN,
-    PBKDF2_DIGEST: PBKDF2_DIGEST,
-    randomSalt: randomSalt,
-    pbkdf2: pbkdf2,
-    pbkdf2Verify
+    PBKDF2_ITERATIONS,
+    PBKDF2_SALT_LEN,
+    PBKDF2_KEY_LEN,
+    PBKDF2_DIGEST,
+    AES_IV_LEN,
+    AES_KEY_LEN,
+    randomBytesProm,
+    randomSalt,
+    pbkdf2,
+    pbkdf2Verify,
+    aes256gcmEnc,
+    aes256gcmDec
 };
+
+/**
+ * Generates an array of random bytes of length len.
+ * @param {int} len number of bytes that must be returned
+ * @returns a Promise returning an array of random bytes of given length
+ */
+async function randomBytesProm(len) {
+    const randBytes = util.promisify(crypto.randomBytes);
+    return await randBytes(len);
+}
 
 
 /**
  * Generates a random string of length saltlen.
- * @param {*} saltlen 
+ * @param {int} saltlen length of salt
  * @returns a Promise returning a random string of length saltlen
  */
 async function randomSalt(saltlen = PBKDF2_SALT_LEN) {
     if (saltlen % 2 != 0) throw Error("saltlen must be even (the returned string is in hex format)");
-    const randBytes = util.promisify(randomBytes);
-    var bytes = await randBytes(saltlen / 2); // every byte will be represented with 2 bytes for string conversion
+    let bytes = await randomBytesProm(saltlen / 2); // every byte will be represented with 2 bytes for string conversion
     return bytes.toString('hex');
 }
 
@@ -52,7 +71,7 @@ async function randomSalt(saltlen = PBKDF2_SALT_LEN) {
  * @returns {string} the derived pbkdf2 key as hex string
  */
 function pbkdf2(plain, salt, iterations = PBKDF2_ITERATIONS, keylen = PBKDF2_KEY_LEN, digest = PBKDF2_DIGEST) {
-    var key = pbkdf2Sync(plain, salt, iterations, keylen, digest);
+    let key = crypto.pbkdf2Sync(plain, salt, iterations, keylen, digest);
     return key.toString('hex');
 }
 
@@ -67,6 +86,28 @@ function pbkdf2(plain, salt, iterations = PBKDF2_ITERATIONS, keylen = PBKDF2_KEY
  * @returns {bool} true if the verification has been successful
  */
 function pbkdf2Verify(plain, salt, hexhash, iterations = PBKDF2_ITERATIONS, keylen = PBKDF2_KEY_LEN, digest = PBKDF2_DIGEST) {
-    var key = pbkdf2Sync(plain, salt, iterations, keylen, digest);
+    let key = crypto.pbkdf2Sync(plain, salt, iterations, keylen, digest);
     return key.toString('hex') == hexhash;
+}
+
+async function aes256gcmEnc(plaintext, key, iv = null) {
+    if (iv === null) {
+        iv = await randomBytesProm(AES_IV_LEN);
+    }
+    const cipher = crypto.createCipheriv(AES_256_GCM, key, iv);
+    let enc = cipher.update(plaintext, AES_IN_ENCODING, AES_OUT_ENCODING);
+    enc += cipher.final(AES_OUT_ENCODING);
+    return {
+        ciphertext: enc,
+        iv: iv,
+        authTag: cipher.getAuthTag()
+    };
+}
+
+function aes256gcmDec(ciphertext, key, iv, authTag) {
+    const decipher = crypto.createDecipheriv(AES_256_GCM, key, iv);
+    decipher.setAuthTag(authTag);
+    let plain = decipher.update(ciphertext, AES_OUT_ENCODING, AES_IN_ENCODING);
+    plain += decipher.final(AES_IN_ENCODING);
+    return plain;
 }

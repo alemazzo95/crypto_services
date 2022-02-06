@@ -82,8 +82,33 @@ function testPbkdf2Verify() {
     });
 }
 
+function testAes256Gcm() {
+    describe(`#aes256gcmEnc(...)`, function() {
+        const key1 = Buffer.from("924432b5d2daf360f379db847681fdc1026b598d60be4c08191930d33ce06131", "hex");
+        const iv1 = Buffer.from("70667b2d3f90167e8aca9a315cea85c9", "hex");
+        const plaintext = "ciao bella";
+        const expCiphertext = "mby4GWahpin7Aw==";
+        const expAuthTag = Buffer.from("2abc309063bea33f3a834daffa8fa03a", "hex");
+        it(`aes256gcmEnc("${plaintext}", "${key1}", "${iv1}") should return "${expCiphertext}"`, function(done) {
+            crypto.aes256gcmEnc(plaintext, key1, iv1).then(enc => {
+                assert.equal(enc.ciphertext, expCiphertext);
+                assert.equal(enc.iv.toString("hex"), iv1.toString("hex"));
+                assert.equal(enc.authTag.toString("hex"), expAuthTag.toString("hex"));
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        });
+        it(`aes256gcmDec("${expCiphertext}", "${key1}", "${iv1}", "${expAuthTag}") should return "${plaintext}"`, function() {
+            const plain = crypto.aes256gcmDec(expCiphertext, key1, iv1, expAuthTag);
+            assert.equal(plain, plaintext);
+        });
+    });
+}
+
 describe('Crypto', function() {
     testRandomSalt();
     testPbkdf2Generation();
     testPbkdf2Verify();
+    testAes256Gcm();
 });
