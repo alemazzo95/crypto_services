@@ -15,7 +15,7 @@ const PBKDF2_SALT_LEN = 32; // bytes
 const PBKDF2_KEY_LEN = 64; // bytes
 const PBKDF2_DIGEST = 'sha256';
 
-// Symmetric enc params
+// AES params
 const AES_256_GCM = 'aes-256-gcm';
 const AES_IV_LEN = 16; // bytes
 const AES_KEY_LEN = 32; // bytes
@@ -36,6 +36,7 @@ module.exports = {
     pbkdf2,
     pbkdf2Verify,
     aes256gcmEnc,
+    aes256gcmEncWithIV,
     aes256gcmDec
 };
 
@@ -48,7 +49,6 @@ async function randomBytesProm(len) {
     const randBytes = util.promisify(crypto.randomBytes);
     return await randBytes(len);
 }
-
 
 /**
  * Generates a random string of length saltlen.
@@ -90,10 +90,14 @@ function pbkdf2Verify(plain, salt, hexhash, iterations = PBKDF2_ITERATIONS, keyl
     return key.toString('hex') == hexhash;
 }
 
-async function aes256gcmEnc(plaintext, key, iv = null) {
-    if (iv === null) {
-        iv = await randomBytesProm(AES_IV_LEN);
-    }
+/**
+ * Encrypts the given plaintext using AES-256-GCM algorithm.
+ * @param {string} plaintext the plaintext to encrypt
+ * @param {Buffer} key the AES-256 key. It must be 256-bit long
+ * @param {Buffer} iv the instance vector
+ * @returns an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
+ */
+function aes256gcmEncWithIV(plaintext, key, iv) {
     const cipher = crypto.createCipheriv(AES_256_GCM, key, iv);
     let enc = cipher.update(plaintext, AES_IN_ENCODING, AES_OUT_ENCODING);
     enc += cipher.final(AES_OUT_ENCODING);
@@ -104,6 +108,25 @@ async function aes256gcmEnc(plaintext, key, iv = null) {
     };
 }
 
+/**
+ * Encrypts the given plaintext using AES-256-GCM algorithm.
+ * @param {string} plaintext the plaintext to encrypt
+ * @param {Buffer} key the AES-256 key. It must be 256-bit long
+ * @returns a Promise returning an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
+ */
+async function aes256gcmEnc(plaintext, key) {
+    let iv = await randomBytesProm(AES_IV_LEN);
+    return aes256gcmEncWithIV(plaintext, key, iv);
+}
+
+/**
+ * Decrypts the given ciphertext using AES-256-GCM algorithm.
+ * @param {string} ciphertext ciphertext to decrypt expressed as base64 string
+ * @param {Buffer} key the AES-256 key. It myst be 256-bit long
+ * @param {Buffer} iv the instance vector
+ * @param {Buffer} authTag the authentication tag
+ * @returns the plaintext expressed as utf8 string
+ */
 function aes256gcmDec(ciphertext, key, iv, authTag) {
     const decipher = crypto.createDecipheriv(AES_256_GCM, key, iv);
     decipher.setAuthTag(authTag);
