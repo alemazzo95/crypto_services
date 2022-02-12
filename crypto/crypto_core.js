@@ -1,5 +1,5 @@
 /* 
-    Selection and call semplification for usefull crypto functions.
+    Selection and call semplification for usefull crypto primitives.
     For parameters details see:
     https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
     https://stackoverflow.com/questions/17218089/salt-and-hash-using-pbkdf2
@@ -31,7 +31,6 @@ module.exports = {
     PBKDF2_DIGEST,
     AES_IV_LEN,
     AES_KEY_LEN,
-    randomBytesProm,
     randomSalt,
     pbkdf2,
     pbkdf2Verify,
@@ -41,23 +40,13 @@ module.exports = {
 };
 
 /**
- * Generates an array of random bytes of length len.
- * @param {int} len number of bytes that must be returned
- * @returns a Promise returning an array of random bytes of given length
- */
-async function randomBytesProm(len) {
-    const randBytes = util.promisify(crypto.randomBytes);
-    return await randBytes(len);
-}
-
-/**
  * Generates a random string of length saltlen.
  * @param {int} saltlen length of salt
  * @returns a Promise returning a random string of length saltlen
  */
-async function randomSalt(saltlen = PBKDF2_SALT_LEN) {
-    if (saltlen % 2 != 0) throw Error("saltlen must be even (the returned string is in hex format)");
-    let bytes = await randomBytesProm(saltlen / 2); // every byte will be represented with 2 bytes for string conversion
+function randomSalt(saltlen = PBKDF2_SALT_LEN) {
+    if (saltlen % 2 != 0) throw new Error("saltlen must be even (the returned string is in hex format)");
+    let bytes = crypto.randomBytes(saltlen / 2); // every byte will be represented with 2 bytes for string conversion
     return bytes.toString('hex');
 }
 
@@ -114,8 +103,8 @@ function aes256gcmEncWithIV(plaintext, key, iv) {
  * @param {Buffer} key the AES-256 key. It must be 256-bit long
  * @returns a Promise returning an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
  */
-async function aes256gcmEnc(plaintext, key) {
-    let iv = await randomBytesProm(AES_IV_LEN);
+function aes256gcmEnc(plaintext, key) {
+    let iv = crypto.randomBytes(AES_IV_LEN);
     return aes256gcmEncWithIV(plaintext, key, iv);
 }
 
