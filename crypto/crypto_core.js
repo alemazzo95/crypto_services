@@ -7,7 +7,6 @@
 
 // Imports
 const crypto = require('crypto');
-const util = require('util');
 
 // KDF params
 const PBKDF2_ITERATIONS = 310000;
@@ -22,6 +21,11 @@ const AES_KEY_LEN = 32; // bytes
 const AES_IN_ENCODING = 'utf8';
 const AES_OUT_ENCODING = 'base64';
 
+// Curve25519 DH params
+const EC_DH_FUN = 'x25519';
+const EC_DH_PUB_KEY_EXPORT_TYPE = 'spki';
+const EC_DH_PUB_KEY_EXPORT_FORMAT = 'pem';
+
 
 // Module exports
 module.exports = {
@@ -31,18 +35,23 @@ module.exports = {
     PBKDF2_DIGEST,
     AES_IV_LEN,
     AES_KEY_LEN,
+    EC_DH_FUN,
     randomSalt,
     pbkdf2,
     pbkdf2Verify,
     aes256gcmEnc,
     aes256gcmEncWithIV,
-    aes256gcmDec
+    aes256gcmDec,
+    x25519GenerateKeyPair,
+    exportPubKey,
+    importPubKey,
+    x25519KeyAgree
 };
 
 /**
  * Generates a random string of length saltlen.
  * @param {int} saltlen length of salt
- * @returns a Promise returning a random string of length saltlen
+ * @returns a random string of length saltlen
  */
 function randomSalt(saltlen = PBKDF2_SALT_LEN) {
     if (saltlen % 2 != 0) throw new Error("saltlen must be even (the returned string is in hex format)");
@@ -87,7 +96,7 @@ function pbkdf2Verify(plain, salt, hexhash, iterations = PBKDF2_ITERATIONS, keyl
  * @returns an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
  */
 function aes256gcmEncWithIV(plaintext, key, iv) {
-    const cipher = crypto.createCipheriv(AES_256_GCM, key, iv);
+    let cipher = crypto.createCipheriv(AES_256_GCM, key, iv);
     let enc = cipher.update(plaintext, AES_IN_ENCODING, AES_OUT_ENCODING);
     enc += cipher.final(AES_OUT_ENCODING);
     return {
@@ -101,7 +110,7 @@ function aes256gcmEncWithIV(plaintext, key, iv) {
  * Encrypts the given plaintext using AES-256-GCM algorithm.
  * @param {string} plaintext the plaintext to encrypt
  * @param {Buffer} key the AES-256 key. It must be 256-bit long
- * @returns a Promise returning an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
+ * @returns an object with the following keys: "ciphertext" base64 string, "iv" Buffer, "authTag" Buffer.
  */
 function aes256gcmEnc(plaintext, key) {
     let iv = crypto.randomBytes(AES_IV_LEN);
@@ -117,9 +126,48 @@ function aes256gcmEnc(plaintext, key) {
  * @returns the plaintext expressed as utf8 string
  */
 function aes256gcmDec(ciphertext, key, iv, authTag) {
-    const decipher = crypto.createDecipheriv(AES_256_GCM, key, iv);
+    let decipher = crypto.createDecipheriv(AES_256_GCM, key, iv);
     decipher.setAuthTag(authTag);
     let plain = decipher.update(ciphertext, AES_OUT_ENCODING, AES_IN_ENCODING);
     plain += decipher.final(AES_IN_ENCODING);
     return plain;
+}
+
+/**
+ * @returns an x25519 key pair object
+ */
+function x25519GenerateKeyPair() {
+    return crypto.generateKeyPairSync(EC_DH_FUN);
+}
+
+/**
+ * @param {crypto.KeyObject} pubKey the public key to export
+ * @returns a key export string of format {@link EC_DH_PUB_KEY_EXPORT_FORMAT} and type {@link EC_DH_PUB_KEY_EXPORT_TYPE}
+ */
+function exportPubKey(pubKey) {
+    return pubKey.export({
+        type: EC_DH_PUB_KEY_EXPORT_TYPE,
+        format: EC_DH_PUB_KEY_EXPORT_FORMAT
+    });
+}
+
+/**
+ * @param {string} pubKeyExport a key export string to import
+ * @returns the imported public key oject ( {@link crypto.KeyObject} )
+ */
+function importPubKey(pubKeyExport) {
+    return crypto.createPublicKey(pubKeyExport);
+}
+
+/**
+ * 
+ * @param {crypto.KeyObject} privateKey the external private key
+ * @param {crypto.KeyObject} publicKey the internal public key
+ * @returns the Diffie-Hellman shared secret as {@link Buffer}
+ */
+function x25519KeyAgree(privateKey, publicKey) {
+    return crypto.diffieHellman({
+        publicKey: publicKey,
+        privateKey: privateKey
+    });
 }
