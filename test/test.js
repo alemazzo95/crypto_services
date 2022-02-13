@@ -134,9 +134,9 @@ function testAsymKeyAgree() {
         let bobPubKeyExport = cc.exportPubKey(bobKeyPair.publicKey);
         it(`asymKeyAgree(bobPubKey, aliceKeyPair).keyAgree = asymKeyAgree(alicePubKey, bobKeyPair).keyAgree`, () => {
             let aliceKeyAgree = cd.asymKeyAgree(bobPubKeyExport);
-            assert.equal(aliceKeyAgree.alicePubKeyExport, cc.exportPubKey(aliceKeyAgree.aliceKeyPair.publicKey));
-            let bobKeyAgree = cd.asymKeyAgree(aliceKeyAgree.alicePubKeyExport, bobKeyPair);
-            assert.equal(aliceKeyAgree.keyAgree.toString('hex'), bobKeyAgree.keyAgree.toString('hex'));
+            assert.equal(aliceKeyAgree.pubKeyExport, cc.exportPubKey(aliceKeyAgree.keyPair.publicKey));
+            let bobKeyAgree = cd.asymKeyAgree(aliceKeyAgree.pubKeyExport, bobKeyPair);
+            assert.equal(aliceKeyAgree.sharedSecret.toString('hex'), bobKeyAgree.sharedSecret.toString('hex'));
         });
     });
 }
@@ -156,6 +156,49 @@ function testSymMethods() {
     });
 }
 
+function testCryptoFlow() {
+
+    // client sends its public key to the server
+    let clientKeyPair = cc.x25519GenerateKeyPair();
+    let clientPubKeyExport = cc.exportPubKey(clientKeyPair.publicKey);
+
+    // server receives client public key, generates the server key pair
+    // computes the DH shared secret and sends server public key to the client
+    let serverKeyAgree = cd.asymKeyAgree(clientPubKeyExport);
+    let serverPubKeyExport = serverKeyAgree.pubKeyExport;
+    let serverSharedSecret = serverKeyAgree.sharedSecret;
+    
+    // client computes DH shared secret
+    let clientKeyAgree = cd.asymKeyAgree(serverPubKeyExport, clientKeyPair);
+    let clientSharedSecret = clientKeyAgree.sharedSecret;
+
+    it(`clientSharedSecret = serverSharedSecret`, () => {
+        assert.equal(clientSharedSecret.toString('hex'), serverSharedSecret.toString('hex'));
+    });
+
+    // client encrypts a message and sends it to the server
+    const clientMsg = "a beautiful client message";
+    let encryptedClientMsg = cd.symEncrypt(clientSharedSecret, clientMsg);
+
+    // server decrypts the encrypted client message
+    let decryptedClientMsg = cd.symDecrypt(serverSharedSecret, encryptedClientMsg);
+    
+    it(`decryptedClientMsg = clientMsg`, () => {
+        assert.equal(decryptedClientMsg, clientMsg);
+    });
+
+    // server generates a response, encrypts and sends it to the client
+    const serverResponse = "a pretty server response";
+    let encryptedServerRes = cd.symEncrypt(serverSharedSecret, serverResponse);
+    
+    // client decypts the encrypted server response
+    let decryptedServerRes = cd.symDecrypt(clientSharedSecret, encryptedServerRes);
+
+    it(`decryptedServerRes = serverResponse`, () => {
+        assert.equal(decryptedServerRes, serverResponse);
+    });
+}
+
 describe('crypto_core', () => {
     testRandomSalt();
     testPbkdf2Generation();
@@ -167,4 +210,8 @@ describe('crypto_core', () => {
 describe('crypto_driver', () => {
     testAsymKeyAgree();
     testSymMethods();
+});
+
+describe('crypto flow', () => {
+    testCryptoFlow();
 });
