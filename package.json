@@ -1,7 +1,7 @@
 {
   "name": "auth_handler",
   "version": "1.0.0",
-  "description": "PoC for key derivation function to used for password storage",
+  "description": "Node.js middleware for user authentication, password storage and secure session handling",
   "author": "Alessandro Mazzoleni <alemazzo95@gmail.com>",
   "main": "main.js",
   "scripts": {
