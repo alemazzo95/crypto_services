@@ -8,7 +8,10 @@ const cc = require("./crypto_core.js");
 
 // Module exports
 module.exports = {
-    asymKeyAgree
+    asymKeyAgree,
+    randomSymKey,
+    symEncrypt,
+    symDecrypt
 };
 
 /**
@@ -28,4 +31,26 @@ function asymKeyAgree(bobPubKeyExport, aliceKeyPair = null) {
         aliceKeyPair: aliceKeyPair,
         alicePubKeyExport: cc.exportPubKey(aliceKeyPair.publicKey)
     };
+}
+
+function randomSymKey() {
+    return cc.randomBytes(cc.AES_KEY_LEN);
+}
+
+function symEncrypt(key, plaintext) {
+    let cipherObj = cc.aes256gcmEnc(plaintext, key);
+    let ivHex = cipherObj.iv.toString('hex');
+    let authTagHex = cipherObj.authTag.toString('hex');
+    return `${ivHex}:${authTagHex}:${cipherObj.ciphertext}`;
+}
+
+function symDecrypt(key, payload) {
+    let splittedPayload = payload.split(':');
+    if (splittedPayload.length != 3) {
+        throw new Error("Invalid payload");
+    }
+    let iv = Buffer.from(splittedPayload[0], 'hex');
+    let authTag = Buffer.from(splittedPayload[1], 'hex');
+    let ciphertext = splittedPayload[2];
+    return cc.aes256gcmDec(ciphertext, key, iv, authTag);
 }

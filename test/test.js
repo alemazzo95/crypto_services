@@ -141,6 +141,21 @@ function testAsymKeyAgree() {
     });
 }
 
+function testSymMethods() {
+    describe(`#symmetric methods`, () => {
+        let key = cd.randomSymKey();
+        it(`randomSymKey() should return a random key of lenght ${cc.AES_KEY_LEN}`, () => {
+            assert.equal(key.length, cc.AES_KEY_LEN);
+        });
+        let plaintext = "Hello World, how are you?";
+        it(`symDecrypt(<key>, symEncrypt(<key>, <plaintext>)) = <plaintext>`, () => {
+            let payload = cd.symEncrypt(key, plaintext);
+            let decrypted = cd.symDecrypt(key, payload);
+            assert.equal(decrypted, plaintext);
+        });
+    });
+}
+
 describe('crypto_core', () => {
     testRandomSalt();
     testPbkdf2Generation();
@@ -151,4 +166,5 @@ describe('crypto_core', () => {
 
 describe('crypto_driver', () => {
     testAsymKeyAgree();
+    testSymMethods();
 });

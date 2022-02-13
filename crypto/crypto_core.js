@@ -36,6 +36,7 @@ module.exports = {
     AES_IV_LEN,
     AES_KEY_LEN,
     EC_DH_FUN,
+    randomBytes,
     randomSalt,
     pbkdf2,
     pbkdf2Verify,
@@ -47,6 +48,10 @@ module.exports = {
     importPubKey,
     x25519KeyAgree
 };
+
+function randomBytes(len) {
+    return crypto.randomBytes(len);
+}
 
 /**
  * Generates a random string of length saltlen.
