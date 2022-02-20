@@ -6,13 +6,30 @@
 const crypto = require("crypto");
 const cc = require("./crypto_core.js");
 
+/*
+    Used to be backwards compatible in case of parameters upgrade.
+ */
+const DERIVATION_KEY_VER = "v1";
+const DERIVATION_KEY_PARAMS = {
+    "v1": {
+        "PBKDF2_ITERATIONS": 310000,
+        "PBKDF2_SALT_LEN": 32,
+        "PBKDF2_KEY_LEN": 64,
+        "PBKDF2_DIGEST": 'sha256'
+    }
+};
+
 // Module exports
 module.exports = {
+    DERIVATION_KEY_VER,
+    DERIVATION_KEY_PARAMS,
     asymKeyAgree,
     randomSymKey,
     symEncrypt,
     symDecrypt,
-    randomUUID
+    randomUUID,
+    deriveKey,
+    verifyKey
 };
 
 /**
@@ -75,4 +92,40 @@ function symDecrypt(key, payload) {
  */
 function randomUUID() {
     return cc.randomUUID();
+}
+
+function deriveKey(key) {
+    let derivationKeyParams = DERIVATION_KEY_PARAMS[DERIVATION_KEY_VER];
+    let salt = cc.randomSalt(derivationKeyParams["PBKDF2_SALT_LEN"]);
+    let derivedKey = cc.pbkdf2(
+        key,
+        salt,
+        derivationKeyParams["PBKDF2_ITERATIONS"],
+        derivationKeyParams["PBKDF2_KEY_LEN"],
+        derivationKeyParams["PBKDF2_DIGEST"]
+    );
+    return `${DERIVATION_KEY_VER}:${salt}:${derivedKey}`;
+}
+
+function verifyKey(key, derivedKey) {
+    let splittedDerivedKey = derivedKey.split(':');
+    if (splittedDerivedKey.length != 3) {
+        throw new Error("Invalid derived key");
+    }
+    try {
+        let version = splittedDerivedKey[0];
+        let derivationKeyParams = DERIVATION_KEY_PARAMS[version];
+        let salt = splittedDerivedKey[1];
+        let dKey = splittedDerivedKey[2];
+        return cc.pbkdf2Verify(
+            key,
+            salt,
+            dKey,
+            derivationKeyParams["PBKDF2_ITERATIONS"],
+            derivationKeyParams["PBKDF2_KEY_LEN"],
+            derivationKeyParams["PBKDF2_DIGEST"]
+        );
+    } catch(err) {
+        throw new Error("Invalid derived key");
+    }
 }

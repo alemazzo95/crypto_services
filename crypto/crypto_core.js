@@ -73,9 +73,9 @@ function randomSalt(saltlen = PBKDF2_SALT_LEN) {
  * Computes the derived key using pbkdf2 implementation contained in crypto package.
  * @param {string} plain the plaintext
  * @param {string} salt the salt
- * @param {int} iterations number of pbkdf2 iterations
- * @param {int} keylen length of the derived key
- * @param {string} digest ID of the digest algorithm (e.g. 'sha256'). If not specified is set to @PBKDF2_DIGEST
+ * @param {int} iterations number of pbkdf2 iterations. If not specified is set to {@link PBKDF2_ITERATIONS}.
+ * @param {int} keylen length of the derived key. If not specified is set to {@link PBKDF2_KEY_LEN}.
+ * @param {string} digest ID of the digest algorithm (e.g. 'sha256'). If not specified is set to {@link PBKDF2_DIGEST}.
  * @returns {string} the derived pbkdf2 key as hex string
  */
 function pbkdf2(plain, salt, iterations = PBKDF2_ITERATIONS, keylen = PBKDF2_KEY_LEN, digest = PBKDF2_DIGEST) {

@@ -172,6 +172,25 @@ function testSymMethods() {
     });
 }
 
+function testKeyDerivation() {
+    describe(`#key derivation methods`, () => {
+        let password = "pass1234";
+        let dKey = cd.deriveKey(password);
+        it(`deriveKey(${password}) should return a derived key formatted as following "v1:<salt>:<derived_key>"`, () => {
+            console.log(dKey);
+            let splittedDerivedKey = dKey.split(":");
+            assert.equal(splittedDerivedKey.length, 3);
+            assert.equal(splittedDerivedKey[0], cd.DERIVATION_KEY_VER);
+            let expectedParams = cd.DERIVATION_KEY_PARAMS[cd.DERIVATION_KEY_VER];
+            assert.equal(splittedDerivedKey[1].length, expectedParams["PBKDF2_SALT_LEN"]);
+            assert.equal(splittedDerivedKey[2].length, expectedParams["PBKDF2_KEY_LEN"]*2); // expressed in hex, so double it
+        });
+        it(`verifyKey(${password}, deriveKey(${password})) should return true`, () => {
+            assert.equal(cd.verifyKey(password, dKey), true);
+        });
+    });
+}
+
 function testCryptoFlow() {
 
     // client sends its public key to the server
@@ -227,6 +246,7 @@ describe('crypto_core', () => {
 describe('crypto_driver', () => {
     testAsymKeyAgree();
     testSymMethods();
+    testKeyDerivation();
 });
 
 describe('crypto flow', () => {
