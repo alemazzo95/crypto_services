@@ -94,6 +94,11 @@ function randomUUID() {
     return cc.randomUUID();
 }
 
+/**
+ * Derive the given key using pbkdf2. The derived key is versioned so to be backwards compatible.
+ * @param {string} key a string representing a key to derive
+ * @returns a string formatted as follows: <version>:<salt>:<derived_key>
+ */
 function deriveKey(key) {
     let derivationKeyParams = DERIVATION_KEY_PARAMS[DERIVATION_KEY_VER];
     let salt = cc.randomSalt(derivationKeyParams["PBKDF2_SALT_LEN"]);
@@ -107,6 +112,12 @@ function deriveKey(key) {
     return `${DERIVATION_KEY_VER}:${salt}:${derivedKey}`;
 }
 
+/**
+ * Verify that the given key matches the derived one.
+ * @param {string} key the key that must be verified
+ * @param {string} derivedKey the derived key on which verify the key. It must be formatted as indicated in function {@link deriveKey}.
+ * @returns true if the key matches the derived one.
+ */
 function verifyKey(key, derivedKey) {
     let splittedDerivedKey = derivedKey.split(':');
     if (splittedDerivedKey.length != 3) {
