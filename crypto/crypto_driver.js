@@ -34,10 +34,18 @@ function asymKeyAgree(bobPubKeyExport, aliceKeyPair = null) {
     };
 }
 
+/**
+ * @returns a random generated string Buffer that can be used as symmetric key.
+ */
 function randomSymKey() {
     return cc.randomBytes(cc.AES_KEY_LEN);
 }
 
+/**
+ * @param {Buffer} key the symmetric key
+ * @param {string} plaintext the plaintext to encrypt
+ * @returns a payload formatted as the following string: "<iv>:<auth_tag>:<ciphertext>", where iv and auth_tag are formatted in hex strings.
+ */
 function symEncrypt(key, plaintext) {
     let cipherObj = cc.aes256gcmEnc(plaintext, key);
     let ivHex = cipherObj.iv.toString('hex');
@@ -45,6 +53,12 @@ function symEncrypt(key, plaintext) {
     return `${ivHex}:${authTagHex}:${cipherObj.ciphertext}`;
 }
 
+/**
+ * 
+ * @param {Buffer} key the symmetric key
+ * @param {string} payload the payload that must be formatted as returned by function {@link symEncrypt}.
+ * @returns the plaintext
+ */
 function symDecrypt(key, payload) {
     let splittedPayload = payload.split(':');
     if (splittedPayload.length != 3) {
@@ -56,6 +70,9 @@ function symDecrypt(key, payload) {
     return cc.aes256gcmDec(ciphertext, key, iv, authTag);
 }
 
+/**
+ * @returns a random generated UUID.
+ */
 function randomUUID() {
-    cc.randomUUID();
+    return cc.randomUUID();
 }
