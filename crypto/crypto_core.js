@@ -37,6 +37,7 @@ module.exports = {
     AES_KEY_LEN,
     EC_DH_FUN,
     randomBytes,
+    randomUUID,
     randomSalt,
     pbkdf2,
     pbkdf2Verify,
@@ -51,6 +52,10 @@ module.exports = {
 
 function randomBytes(len) {
     return crypto.randomBytes(len);
+}
+
+function randomUUID() {
+    return crypto.randomUUID();
 }
 
 /**

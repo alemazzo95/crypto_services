@@ -11,7 +11,8 @@ module.exports = {
     asymKeyAgree,
     randomSymKey,
     symEncrypt,
-    symDecrypt
+    symDecrypt,
+    randomUUID
 };
 
 /**
@@ -53,4 +54,8 @@ function symDecrypt(key, payload) {
     let authTag = Buffer.from(splittedPayload[1], 'hex');
     let ciphertext = splittedPayload[2];
     return cc.aes256gcmDec(ciphertext, key, iv, authTag);
+}
+
+function randomUUID() {
+    cc.randomUUID();
 }

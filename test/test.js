@@ -11,6 +11,22 @@ function cropString(stringToCrop, charToPrint = 5) {
     return `${stringToCrop.slice(0, charToPrint)}...${stringToCrop.slice(charToPrint * -1)}`;
 }
 
+function testRandomUUID() {
+    describe('#randomUUID()', () => {
+        const UUID_LEN = 36;
+        const UUID_PARTS = 5;
+        const UUID_PARTS_LEN = [8, 4, 4, 4, 12];
+        it('should return a string like "9f48b2a8-cb45-458c-b3d1-dd693b4f1d20"', () => {
+            let uuid = cc.randomUUID();
+            assert.equal(uuid.length, UUID_LEN);
+            let splittedUUID = uuid.split("-");
+            assert.equal(splittedUUID.length, UUID_PARTS);
+            for(let i=0; i<splittedUUID.length; i++) {
+                assert.equal(splittedUUID[i].length, UUID_PARTS_LEN[i]);
+            }
+        });
+    });
+}
 
 function testRandomSalt() {
     describe('#randomSalt(...)', () => {
@@ -200,6 +216,7 @@ function testCryptoFlow() {
 }
 
 describe('crypto_core', () => {
+    testRandomUUID();
     testRandomSalt();
     testPbkdf2Generation();
     testPbkdf2Verify();
