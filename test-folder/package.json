@@ -1,0 +1,14 @@
+{
+  "name": "test-crypto-services",
+  "version": "1.0.0",
+  "description": "Project for testing crypto-services module locally",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Alessandro Mazzoleni <alemazzo95@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "^9.2.0"
+  }
+}

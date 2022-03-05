@@ -1,18 +1,13 @@
 {
-  "name": "auth_handler",
+  "name": "crypto-services",
   "version": "1.0.0",
   "description": "Node.js middleware for user authentication, password storage and secure session handling",
   "author": "Alessandro Mazzoleni <alemazzo95@gmail.com>",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node main.js",
     "test": "mocha"
   },
-  "dependencies": {
-    "argon2": "*",
-    "express": "^4.16.1"
-  },
   "devDependencies": {
-    "mocha": "^9.2.0"
+    "mocha": "^9.2.1"
   }
 }

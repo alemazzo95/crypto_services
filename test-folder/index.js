@@ -1,4 +1,4 @@
-let cd = require('./crypto/crypto_driver.js');
+let cd = require('crypto-services');
 
 try {
     const psw = "password";

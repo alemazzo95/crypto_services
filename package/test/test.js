@@ -3,8 +3,8 @@
  */
 
 const assert = require('assert');
-const cc = require('../crypto/crypto_core.js');
-const cd = require('../crypto/crypto_driver.js');
+const cc = require('../crypto_core.js');
+const cd = require('../index.js');
 
 
 function cropString(stringToCrop, charToPrint = 5) {
