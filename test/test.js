@@ -36,7 +36,7 @@ function testRandomSalt() {
         });
         const saltlen1 = 15;
         it(`randomSalt(${saltlen1}) should throw an error because "saltlen" must be even`, (done) => {
-            try {
+            try {
                 cc.randomSalt(saltlen1);
                 done("It didn't throw the expected error");
             } catch(err) {
@@ -177,7 +177,6 @@ function testKeyDerivation() {
         let password = "pass1234";
         let dKey = cd.deriveKey(password);
         it(`deriveKey(${password}) should return a derived key formatted as following "v1:<salt>:<derived_key>"`, () => {
-            console.log(dKey);
             let splittedDerivedKey = dKey.split(":");
             assert.equal(splittedDerivedKey.length, 3);
             assert.equal(splittedDerivedKey[0], cd.DERIVATION_KEY_VER);
