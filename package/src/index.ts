@@ -26,6 +26,7 @@ export class DerivationKeyParam {
                 this._pbkdf2SaltLen = 32;
                 this._pbkdf2KeyLen = 64;
                 this._pbkdf2Digest = 'sha256';
+                break;
             default:
                 throw new Error("Invalid derived key");
         }

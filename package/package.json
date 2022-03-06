@@ -1,15 +1,15 @@
 {
-  "name": "crypto-services",
-  "version": "1.0.0",
-  "description": "Node.js middleware for user authentication, password storage and secure session handling",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "directories": {
-    "test": "dist/test"
-  },
+  "name": "@alemazzo95/crypto-services",
+  "version": "0.1.0",
+  "description": "Module for user authentication, password storage and secure session handling",
+  "main": "lib/src/index.js",
+  "types": "lib/src/index.d.ts",
+  "files": [
+    "lib/src/**/*"
+  ],
   "scripts": {
-    "pretest": "tsc",
-    "test": "mocha"
+    "tsc": "tsc",
+    "test": "mocha lib/test/*.js"
   },
   "keywords": [],
   "author": "Alessandro Mazzoleni <alemazzo95@gmail.com>",
