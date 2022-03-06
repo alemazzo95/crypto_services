@@ -1,4 +1,5 @@
-let cd = require('crypto-services');
+declare module 'crypto-services';
+import cd from 'crypto-services';
 
 try {
     const psw = "password";

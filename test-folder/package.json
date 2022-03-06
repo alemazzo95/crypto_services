@@ -2,13 +2,19 @@
   "name": "test-crypto-services",
   "version": "1.0.0",
   "description": "Project for testing crypto-services module locally",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "start": "node index.js"
+    "build": "tsc",
+    "prestart": "npm run build",
+    "start": "node ."
   },
   "author": "Alessandro Mazzoleni <alemazzo95@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "mocha": "^9.2.0"
+    "@types/node": "^17.0.21",
+    "typescript": "^4.6.2"
+  },
+  "dependencies": {
+    "crypto-services": "^1.0.0"
   }
 }
