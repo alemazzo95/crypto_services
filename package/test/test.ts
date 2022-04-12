@@ -105,7 +105,7 @@ function testAes256Gcm() {
             assert.equal(enc.iv.toString("hex"), iv1.toString("hex"));
             assert.equal(enc.authTag.toString("hex"), expAuthTag.toString("hex"));
         });
-        it(`aes256gcmEnc("${plaintext}", "${key1}") should return same result of aes256gcmEncWithIV("${plaintext}", "${key1}", <rndIV>)`, () => {
+        it(`let enc = aes256gcmEnc("${plaintext}", "${key1}") should return same result of aes256gcmEncWithIV("${plaintext}", "${key1}", <enc.iv>)`, () => {
             let enc = CryptoCore.aes256gcmEnc(plaintext, key1);
             let enc1 = CryptoCore.aes256gcmEncWithIV(plaintext, key1, enc.iv);
             assert.equal(enc.ciphertext, enc1.ciphertext);
