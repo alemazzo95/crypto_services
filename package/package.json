@@ -1,5 +1,5 @@
 {
-  "name": "@alemazzo95/crypto-services",
+  "name": "@the4seur/crypto-services",
   "version": "0.1.0",
   "description": "Module for user authentication, password storage and secure session handling",
   "main": "lib/src/index.js",
