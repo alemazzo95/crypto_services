@@ -8,7 +8,8 @@
     "lib/src/**/*"
   ],
   "scripts": {
-    "tsc": "tsc",
+    "prepublishOnly": "tsc",
+    "pretest": "tsc",
     "test": "mocha lib/test/*.js"
   },
   "keywords": [],
