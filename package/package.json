@@ -1,6 +1,6 @@
 {
   "name": "crypto-services",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Exposes cryptography services implemented with standard crypto module (e.g. symmetric encryption, key exchange, key derivation)",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
