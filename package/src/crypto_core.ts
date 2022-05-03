@@ -38,10 +38,10 @@ export abstract class CryptoCore {
     
     /**
      * Generates a random string of length saltlen.
-     * @param {int} saltlen length of salt
+     * @param {number} saltlen length of salt
      * @returns a random string of length saltlen
      */
-    public static randomSalt(saltlen = this.PBKDF2_SALT_LEN): string {
+    public static randomSalt(saltlen: number = this.PBKDF2_SALT_LEN): string {
         if (saltlen % 2 != 0) throw new Error("saltlen must be even (the returned string is in hex format)");
         let bytes = crypto.randomBytes(saltlen / 2); // every byte will be represented with 2 bytes for string conversion
         return bytes.toString('hex');

@@ -174,15 +174,26 @@ function testSymMethods() {
 
 function testKeyDerivation() {
     describe(`#key derivation methods`, () => {
+        let expectedParams = new DerivationKeyParam();
+        it(`randomSalt() should return a random string of len ${expectedParams.pbkdf2SaltLen}`, () => {
+            let salt = CryptoCore.randomSalt();
+            assert.equal(salt.length, expectedParams.pbkdf2SaltLen);
+        });
         let password = "pass1234";
         let dKey = CryptoServices.deriveKey(password);
-        it(`deriveKey(${password}) should return a derived key formatted as following "v1:<salt>:<derived_key>"`, () => {
-            let splittedDerivedKey = dKey.split(":");
+        let splittedDerivedKey = dKey.split(":");
+        let derivationKeyVer = splittedDerivedKey[0];
+        let salt = splittedDerivedKey[1];
+        let derivedKey = splittedDerivedKey[2];
+        it(`dKey = deriveKey(${password}) should return a derived key formatted as following "v1:<salt>:<derived_key>"`, () => {
             assert.equal(splittedDerivedKey.length, 3);
-            assert.equal(splittedDerivedKey[0], DerivationKeyParam.DERIVATION_KEY_VER);
-            let expectedParams = new DerivationKeyParam();
-            assert.equal(splittedDerivedKey[1].length, expectedParams.pbkdf2SaltLen);
-            assert.equal(splittedDerivedKey[2].length, expectedParams.pbkdf2KeyLen*2); // expressed in hex, so double it
+            assert.equal(derivationKeyVer, DerivationKeyParam.DERIVATION_KEY_VER);
+            assert.equal(salt.length, expectedParams.pbkdf2SaltLen);
+            assert.equal(derivedKey.length, expectedParams.pbkdf2KeyLen*2); // expressed in hex, so double it
+        });
+        it(`deriveKey(${password}, <dKey.salt>) == dKey"`, () => {
+            let dKey1 = CryptoServices.deriveKey(password, salt);
+            assert.equal(dKey1, dKey);
         });
         it(`verifyKey(${password}, deriveKey(${password})) should return true`, () => {
             assert.equal(CryptoServices.verifyKey(password, dKey), true);
@@ -242,7 +253,7 @@ describe('crypto_core', () => {
     testX25519();
 });
 
-describe('crypto_driver', () => {
+describe('crypto-services', () => {
     testAsymKeyAgree();
     testSymMethods();
     testKeyDerivation();

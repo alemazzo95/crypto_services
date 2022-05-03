@@ -109,13 +109,25 @@ export abstract class CryptoServices {
     }
 
     /**
+     * Generates a random string. Please see {@link DerivationKeyParam} for details on the salt length.
+     * @returns a random string to be used as salt in key derivation functions.
+     */
+    public static randomSalt() {
+        let derivationKeyParams = new DerivationKeyParam();
+        return CryptoCore.randomSalt(derivationKeyParams.pbkdf2SaltLen);
+    }
+
+    /**
      * Derive the given key using pbkdf2. The derived key is versioned so to be backwards compatible.
      * @param {string} key a string representing a key to derive
+     * @param {string} salt an optional string representing a random salt. If not given, a random salt will be generated using {@link CryptoServices.randomSalt}.
      * @returns a string formatted as follows: <version>:<salt>:<derived_key>
      */
-    public static deriveKey(key: string) {
+    public static deriveKey(key: string, salt: string = "") {
         let derivationKeyParams = new DerivationKeyParam();
-        let salt = CryptoCore.randomSalt(derivationKeyParams.pbkdf2SaltLen);
+        if (salt === undefined || salt === "") {
+            salt = CryptoServices.randomSalt();
+        }
         let derivedKey = CryptoCore.pbkdf2(
             key,
             salt,
